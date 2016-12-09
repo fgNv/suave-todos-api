@@ -8,11 +8,10 @@ using System.Threading.Tasks;
 
 namespace ToDoMigrations.Models
 {
-    [Table("User", Schema = "public")]
-    public class User
+    [Table("Tag", Schema = "public")]
+    public class Tag
     {
         [Key]
-        [Column("id")]
         public Guid Id { get; set; }
 
         [MaxLength(100)]

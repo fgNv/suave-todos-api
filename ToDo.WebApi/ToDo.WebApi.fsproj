@@ -59,8 +59,10 @@
     <Compile Include="Sentences.fs" />
     <Compile Include="Infrastructure.fs" />
     <Compile Include="Business.fs" />
+    <Compile Include="JsonParse.fs" />
     <Compile Include="PgSqlPersistence.fs" />
     <Compile Include="Application.fs" />
+    <Compile Include="Routes.fs" />
     <Compile Include="Program.fs" />
     <None Include="App.config" />
     <Content Include="packages.config" />

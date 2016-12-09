@@ -1,10 +1,7 @@
 ﻿module Business
     open System
-    open Infrastructure.Railroad
-
-    type User = { id: Guid; name : string}
-    type Tag = { id: Guid; description: string}
-
+    open Infrastructure.Railroad    
+    
     let inline private validate getErrors input =
         let errors = getErrors input
 
@@ -12,19 +9,41 @@
                 | true -> Result.Success input
                 | false -> Result.Error (Sentences.Validation.validationFailed, errors)
 
-    module createToDoCommand =
+    module createTagsCommand =
+        type item = {id: Guid; name: string}
+        type command = {items: item seq }
+
+        let private validateTag item =
+            seq { if item.id = Guid.Empty then
+                    yield Sentences.Validation.idIsRequired
+                  if String.IsNullOrWhiteSpace item.name then
+                    yield Sentences.Validation.nameIsRequired }
+
+        let private getErrors command =
+            command.items |> Seq.collect validateTag 
+                          |> Seq.distinct
+            
+        let validateTags =
+            validate getErrors
+            
+        let handle saveTags command =
+            command |> validateTags >>= saveTags
+
+    module createToDoCommand =           
         type command = { id: Guid
                          description: string 
                          creatorId: Guid
-                         tagsIds: seq<Guid> }
+                         tagsIds: Guid list } 
 
-        let private getErrors command =
+        let private getErrors userExists command =
             seq { if command.id = Guid.Empty then
                      yield Sentences.Validation.idIsRequired              
                   if String.IsNullOrWhiteSpace command.description then
-                     yield Sentences.Validation.descriptionIsRequired }
+                     yield Sentences.Validation.descriptionIsRequired 
+                  if not(userExists command.creatorId) then
+                     yield Sentences.Validation.invalidUserId }
         
-        let private validate' = validate getErrors
+        let validateToDo userExists = validate (getErrors userExists)
 
-        let handle saveToDo command =
-            command |> validate' >>= saveToDo
+        let handle userExists saveToDo command =
+            command |> validateToDo userExists >>= saveToDo

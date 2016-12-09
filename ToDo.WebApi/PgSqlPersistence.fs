@@ -13,16 +13,30 @@
                                                connectionString,
                                                ResolutionPath = resolutionPath>
 
+    module User =
+        let userExists id =
+            let context = pgsqlAccess.GetDataContext()
+            context.Public.User |> Seq.exists(fun u -> u.Id = id)
+    
     module ToDo =
         open Business
         open Infrastructure.Railroad
 
-        let saveToDo (command : createToDoCommand.command) =
+        let private linkToDoAndTag (context : pgsqlAccess.dataContext) toDoId tagId =
+            let toDoTagLink = context.Public.ToDoTags.Create()
+            toDoTagLink.TagId <- tagId
+            toDoTagLink.ToDoId <- toDoId
+
+        let insertToDo (command : createToDoCommand.command) =
             try
-                let context = pgsqlAccess.GetDataContext()            
+                let context = pgsqlAccess.GetDataContext()
                 let todo = context.Public.ToDo.Create()
                 todo.Id <- command.id
                 todo.Description <- command.description
+                todo.CreatorId <- command.creatorId
+                
+                command.tagsIds |> Seq.iter (linkToDoAndTag context command.id)
+                                
                 context.SubmitUpdates()
                 Success command
             with 

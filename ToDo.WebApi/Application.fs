@@ -1,8 +1,10 @@
-﻿module Application
+﻿module Application    
+    module Persistence = PgSqlPersistence
 
     module ToDo =
         open Business
 
         let createToDo =
-            Business.createToDoCommand.handle PgSqlPersistence.ToDo.saveToDo
+            Business.createToDoCommand.handle 
+                Persistence.User.userExists Persistence.ToDo.insertToDo
 

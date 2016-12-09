@@ -7,13 +7,13 @@ namespace ToDoMigrations.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.0.0-20911")]
-    public sealed partial class sat : IMigrationMetadata
+    public sealed partial class model100 : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(sat));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(model100));
         
         string IMigrationMetadata.Id
         {
-            get { return "201612080009232_sat"; }
+            get { return "201612082307172_model-1.0.0"; }
         }
         
         string IMigrationMetadata.Source

@@ -5,6 +5,7 @@ using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ToDoMigrations.Mappings;
 using ToDoMigrations.Models;
 
 namespace TodoMigrations
@@ -13,6 +14,7 @@ namespace TodoMigrations
     class MigrationsContext : DbContext
     {
         public DbSet<Models.ToDo> ToDos { get; set; }
+        public DbSet<Tag> Tags { get; set; }
         public DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
@@ -21,12 +23,14 @@ namespace TodoMigrations
             modelBuilder.HasDefaultSchema("public");
             modelBuilder.Conventions.Remove<OneToManyCascadeDeleteConvention>();
 
+            modelBuilder.Configurations.Add(new ToDoMapping());
+
             base.OnModelCreating(modelBuilder);
         }
         
         public MigrationsContext(): base("User ID=homestead;Password=secret;Host=192.168.36.36;Port=5432;Database=ingresso_2;Pooling=true;")
         {
-
+            
         }
     }
 }
