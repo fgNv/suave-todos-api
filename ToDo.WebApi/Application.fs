@@ -9,8 +9,6 @@
                 Persistence.User.userExists Persistence.Tag.createTag
 
     module ToDo =
-        
-
         let createToDo =
             Business.createToDoCommand.handle 
                 Persistence.User.userExists Persistence.ToDo.insertToDo
