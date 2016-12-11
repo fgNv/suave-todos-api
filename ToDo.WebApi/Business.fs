@@ -9,25 +9,33 @@
                 | true -> Result.Success input
                 | false -> Result.Error (Sentences.Validation.validationFailed, errors)
 
-    module createTagsCommand =
-        type item = {id: Guid; name: string}
-        type command = {items: item seq }
+    module createUserCommand =
+        type command = {id: Guid; name: string}
 
-        let private validateTag item =
+        let private getErrors item =
             seq { if item.id = Guid.Empty then
                     yield Sentences.Validation.idIsRequired
                   if String.IsNullOrWhiteSpace item.name then
                     yield Sentences.Validation.nameIsRequired }
+            
+        let handle createUser command =
+            command |> validate getErrors >>= createUser
 
-        let private getErrors command =
-            command.items |> Seq.collect validateTag 
-                          |> Seq.distinct
-            
-        let validateTags =
-            validate getErrors
-            
-        let handle saveTags command =
-            command |> validateTags >>= saveTags
+    module createTagCommand =
+        type command = {id: Guid; name: string; creatorId: Guid}
+
+        let private getErrors userExists item =
+            seq { if item.id = Guid.Empty then
+                    yield Sentences.Validation.idIsRequired
+                  if item.creatorId = Guid.Empty then
+                    yield Sentences.Validation.cretorIdIsRequired
+                  if String.IsNullOrWhiteSpace item.name then
+                    yield Sentences.Validation.nameIsRequired
+                  if not(userExists item.creatorId) then
+                     yield Sentences.Validation.invalidUserId }
+                        
+        let handle userExists createTag command =
+            command |> validate (getErrors userExists) >>= createTag
 
     module createToDoCommand =           
         type command = { id: Guid
@@ -43,7 +51,5 @@
                   if not(userExists command.creatorId) then
                      yield Sentences.Validation.invalidUserId }
         
-        let validateToDo userExists = validate (getErrors userExists)
-
         let handle userExists saveToDo command =
-            command |> validateToDo userExists >>= saveToDo
+            command |> validate (getErrors userExists) >>= saveToDo

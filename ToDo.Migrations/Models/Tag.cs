@@ -17,5 +17,8 @@ namespace ToDoMigrations.Models
         [MaxLength(100)]
         [Required]
         public string Name { get; set; }
+
+        [Required]
+        public User Creator { get; set; }
     }
 }

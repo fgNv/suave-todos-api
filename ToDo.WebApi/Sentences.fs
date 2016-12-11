@@ -2,6 +2,7 @@
     module Validation =
         let idIsRequired = "idIsRequired"
         let validationFailed = "validationFailed"
+        let cretorIdIsRequired = "cretorIdIsRequired'"
         let descriptionIsRequired = "descriptionIsRequired"
         let invalidUserId = "invalidUserId"
         let nameIsRequired = "nameIsRequired"

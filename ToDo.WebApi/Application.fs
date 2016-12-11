@@ -1,8 +1,15 @@
 ﻿module Application    
+    open Business
+
     module Persistence = PgSqlPersistence
 
+    module Tag =
+        let createTag =
+            Business.createTagCommand.handle
+                Persistence.User.userExists Persistence.Tag.createTag
+
     module ToDo =
-        open Business
+        
 
         let createToDo =
             Business.createToDoCommand.handle 

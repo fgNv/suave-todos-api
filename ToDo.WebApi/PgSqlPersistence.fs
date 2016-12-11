@@ -1,27 +1,50 @@
 ﻿module PgSqlPersistence
     open FSharp.Data.Sql
     open System.IO
+    open Business
+    open Infrastructure.Railroad
 
     [<Literal>]
-    let connectionString = @"User ID=homestead;Password=secret;
-                             Host=192.168.36.36;Port=5432;Database=ingresso_2;"
+    let private connectionString = @"User ID=homestead;Password=secret;
+                                     Host=192.168.36.36;Port=5432;Database=ingresso_2;"
 
     [<Literal>]
-    let resolutionPath = "..\\..\\..\\packages\\Npgsql.3.1.9\\lib\\net451\\Npgsql.dll"
+    let private resolutionPath = "..\\..\\..\\packages\\Npgsql.3.1.9\\lib\\net451\\Npgsql.dll"
 
     type private pgsqlAccess = SqlDataProvider<Common.DatabaseProviderTypes.POSTGRESQL,
                                                connectionString,
                                                ResolutionPath = resolutionPath>
 
+    let private getContext() =
+        pgsqlAccess.GetDataContext()
+        
+    module Tag = 
+        let createTag (command: createTagCommand.command) =            
+            try 
+                let context = getContext()
+                let tag = context.Public.Tag.Create()
+                tag.Id <- command.id
+                tag.Name <- command.name
+                tag.CreatorId <- command.creatorId
+                context.SubmitUpdates()
+                Success command
+            with 
+                | ex -> Error (Sentences.Error.databaseFailure, 
+                               Infrastructure.Error.getExceptionMessages ex)
+
     module User =
         let userExists id =
-            let context = pgsqlAccess.GetDataContext()
+            let context = getContext()
             context.Public.User |> Seq.exists(fun u -> u.Id = id)
+
+        let createUser (command: createUserCommand.command) =
+            let context = getContext()
+            let user = context.Public.User.Create()
+            user.Id <- command.id
+            user.Name <- command.name
+            context.SubmitUpdates()
     
     module ToDo =
-        open Business
-        open Infrastructure.Railroad
-
         let private linkToDoAndTag (context : pgsqlAccess.dataContext) toDoId tagId =
             let toDoTagLink = context.Public.ToDoTags.Create()
             toDoTagLink.TagId <- tagId
@@ -29,7 +52,7 @@
 
         let insertToDo (command : createToDoCommand.command) =
             try
-                let context = pgsqlAccess.GetDataContext()
+                let context = getContext()
                 let todo = context.Public.ToDo.Create()
                 todo.Id <- command.id
                 todo.Description <- command.description

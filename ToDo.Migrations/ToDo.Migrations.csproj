@@ -67,6 +67,10 @@
     <Compile Include="Migrations\201612082307172_model-1.0.0.Designer.cs">
       <DependentUpon>201612082307172_model-1.0.0.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201612101613560_TagCreator.cs" />
+    <Compile Include="Migrations\201612101613560_TagCreator.Designer.cs">
+      <DependentUpon>201612101613560_TagCreator.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Tag.cs" />
     <Compile Include="Models\ToDo.cs" />
@@ -83,6 +87,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201612082307172_model-1.0.0.resx">
       <DependentUpon>201612082307172_model-1.0.0.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201612101613560_TagCreator.resx">
+      <DependentUpon>201612101613560_TagCreator.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

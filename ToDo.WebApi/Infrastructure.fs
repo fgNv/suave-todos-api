@@ -1,4 +1,7 @@
 ﻿module Infrastructure
+
+open System
+
     module Railroad =
         type Result<'TEntity> =  
             | Success of 'TEntity

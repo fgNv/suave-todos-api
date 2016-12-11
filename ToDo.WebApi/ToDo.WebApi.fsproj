@@ -92,6 +92,26 @@
       <HintPath>..\packages\SQLProvider.1.0.37\lib\FSharp.Data.SqlProvider.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="FSharp.Management">
+      <HintPath>..\packages\FSharp.Management.0.4.3\lib\net40\FSharp.Management.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FSharp.Management.PowerShell">
+      <HintPath>..\packages\FSharp.Management.0.4.3\lib\net40\FSharp.Management.PowerShell.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FSharp.Management.PowerShell.ExternalRuntime">
+      <HintPath>..\packages\FSharp.Management.0.4.3\lib\net40\FSharp.Management.PowerShell.ExternalRuntime.exe</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FSharp.Management.WMI">
+      <HintPath>..\packages\FSharp.Management.0.4.3\lib\net40\FSharp.Management.WMI.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FSharp.Management.WMI.DesignTime">
+      <HintPath>..\packages\FSharp.Management.0.4.3\lib\net40\FSharp.Management.WMI.DesignTime.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="Npgsql">
       <HintPath>..\packages\Npgsql.3.1.9\lib\net451\Npgsql.dll</HintPath>
@@ -104,6 +124,10 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Management.Automation">
+      <HintPath>..\packages\FSharp.Management.0.4.3\lib\net40\System.Management.Automation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
