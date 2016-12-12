@@ -18,13 +18,16 @@ let inline private executeCommand deserializeCommand handleCommand request =
           | Error (title, errors) ->  BAD_REQUEST (title + " - nem deu")
 
 let apiRoutes = 
+    let securedPath path = 
+        Suave.Owin.OwinApp.ofMidFunc path OwinAuthentication.basicAuthMidFunc
+
     choose [ path "/user" >=> 
                    choose [ GET >=> OK "user getzera"
                             POST >=> OK "user postzera" ] 
              path "/tag" >=> 
                    choose [ GET >=> OK "user getzera"
                             POST >=> OK "tag postzera" ] 
-             path "/todo" >=> 
+             securedPath "/todo" >=> 
                    choose [ GET >=> OK "todo getzera"
                             POST >=> request 
                                 (executeCommand 

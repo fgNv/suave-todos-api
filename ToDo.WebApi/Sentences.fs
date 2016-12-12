@@ -7,6 +7,9 @@
         let invalidUserId = "invalidUserId"
         let nameIsRequired = "nameIsRequired"
         let invalidJson = "invalidJson"
+        let noAuthenticationHeaderFound = "noAuthenticationHeaderFound"
+        let invalidCredentials = "invalidCredentials"
     module Error =
         let databaseFailure = "databaseFailure"    
+        let authenticationFailure = "authenticationFailure" 
 
