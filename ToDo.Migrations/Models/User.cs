@@ -17,6 +17,11 @@ namespace ToDoMigrations.Models
 
         [MaxLength(100)]
         [Required]
+        [Index(IsUnique = true)]
         public string Name { get; set; }
+
+        [MaxLength(100)]
+        [Required]
+        public string Password { get; set; }
     }
 }

@@ -23,10 +23,14 @@ let apiRoutes =
 
     choose [ path "/user" >=> 
                    choose [ GET >=> OK "user getzera"
-                            POST >=> OK "user postzera" ] 
+                            POST >=> request 
+                                (executeCommand 
+                                    JsonParse.User.deserializeCreateUserCommand Application.User.createUser) ] 
              path "/tag" >=> 
                    choose [ GET >=> OK "user getzera"
-                            POST >=> OK "tag postzera" ] 
+                            POST >=> request 
+                                (executeCommand 
+                                    JsonParse.Tag.deserializeCreateTagCommand Application.Tag.createTag) ] 
              securedPath "/todo" >=> 
                    choose [ GET >=> OK "todo getzera"
                             POST >=> request 

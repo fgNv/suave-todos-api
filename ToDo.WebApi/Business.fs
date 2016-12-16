@@ -10,13 +10,15 @@
                 | false -> Result.Error (Sentences.Validation.validationFailed, errors)
 
     module createUserCommand =
-        type command = {id: Guid; name: string}
+        type command = {id: Guid; name: string; password: string}
 
         let private getErrors item =
             seq { if item.id = Guid.Empty then
                     yield Sentences.Validation.idIsRequired
                   if String.IsNullOrWhiteSpace item.name then
-                    yield Sentences.Validation.nameIsRequired }
+                    yield Sentences.Validation.nameIsRequired
+                  if String.IsNullOrWhiteSpace item.password then
+                    yield Sentences.Validation.passwordIsRequired }
             
         let handle createUser command =
             command |> validate getErrors >>= createUser
@@ -32,7 +34,7 @@
                   if String.IsNullOrWhiteSpace item.name then
                     yield Sentences.Validation.nameIsRequired
                   if not(userExists item.creatorId) then
-                     yield Sentences.Validation.invalidUserId }
+                    yield Sentences.Validation.invalidUserId }
                         
         let handle userExists createTag command =
             command |> validate (getErrors userExists) >>= createTag

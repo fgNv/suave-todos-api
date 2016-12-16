@@ -6,6 +6,7 @@
         let descriptionIsRequired = "descriptionIsRequired"
         let invalidUserId = "invalidUserId"
         let nameIsRequired = "nameIsRequired"
+        let passwordIsRequired = "passwordIsRequired"
         let invalidJson = "invalidJson"
         let noAuthenticationHeaderFound = "noAuthenticationHeaderFound"
         let invalidCredentials = "invalidCredentials"

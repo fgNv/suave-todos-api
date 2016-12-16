@@ -19,7 +19,7 @@
         pgsqlAccess.GetDataContext()
         
     module Tag = 
-        let createTag (command: createTagCommand.command) =            
+        let insertTag (command: createTagCommand.command) =            
             try 
                 let context = getContext()
                 let tag = context.Public.Tag.Create()
@@ -37,12 +37,19 @@
             let context = getContext()
             context.Public.User |> Seq.exists(fun u -> u.Id = id)
 
-        let createUser (command: createUserCommand.command) =
-            let context = getContext()
-            let user = context.Public.User.Create()
-            user.Id <- command.id
-            user.Name <- command.name
-            context.SubmitUpdates()
+        let insertUser (command: createUserCommand.command) =
+            try
+                let context = getContext()
+                let user = context.Public.User.Create()
+                user.Id <- command.id
+                user.Name <- command.name
+                user.Password <- Infrastructure.Cryptography.encrypt command.password
+                context.SubmitUpdates()
+
+                Success command
+            with
+                | ex -> Error(Sentences.Error.databaseFailure, 
+                              Infrastructure.Error.getExceptionMessages ex)
     
     module ToDo =
         let private linkToDoAndTag (context : pgsqlAccess.dataContext) toDoId tagId =

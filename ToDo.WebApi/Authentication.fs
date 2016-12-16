@@ -6,6 +6,8 @@ open System.Collections.Generic
 open System.Text
 open System.Threading.Tasks
 open Infrastructure.Railroad
+open Microsoft.Owin.Security.OAuth
+open Microsoft.Owin
 
 type Token = 
     { ExpireIn : DateTime
@@ -38,7 +40,20 @@ let private getAuthorizationHeaderFromRequest (env : OwinEnvironment) =
     | true -> Success requestHeaders.[authorizationKey]
     | false -> Error(Sentences.Error.authenticationFailure, [| Sentences.Validation.noAuthenticationHeaderFound |])
 
+type SimpleAuthenticationProvider() =
+    inherit OAuthAuthorizationServerProvider()
+
+    override this.ValidateClientAuthentication (context : OAuthValidateClientAuthenticationContext) =
+        let f: Async<unit> = async { context.Validated() |> ignore }
+        upcast Async.StartAsTask f 
+
 let basicAuthMidFunc = 
+    let serverOptions = new OAuthAuthorizationServerOptions(
+                            AllowInsecureHttp = true,
+                            TokenEndpointPath= new PathString("/token"),
+                            AccessTokenExpireTimeSpan = TimeSpan.FromDays(1.0),
+                            Provider = new SimpleAuthenticationProvider() )
+
     OwinMidFunc(fun next -> 
         OwinAppFunc(fun env -> 
             let result = env |> getAuthorizationHeaderFromRequest >>=
