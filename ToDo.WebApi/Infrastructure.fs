@@ -17,6 +17,25 @@ open System.Security.Cryptography
         let (>>=) input switchFunction =
             bind switchFunction input
 
+        let errorOnEmptySeq seq =
+            match seq |> Seq.isEmpty with
+                | true -> Error ("nein", [|"nein"|]) | false -> Success seq
+
+        let inline errorOnNone input =
+            match input with 
+                | Some v -> Success v
+                | None -> Error("nein", [|"nein"|])
+
+        let errorOnEmptyString string =
+            match string |> String.IsNullOrWhiteSpace with
+                | true -> Error ("nein", [|"nein"|]) | false -> Success string
+
+        type RailroadBuilder() =
+            member this.Bind(m, f) = bind f m
+            member this.Return (v) = Success v
+
+        let rBuilder = new RailroadBuilder()
+
     module Cryptography =
         let encrypt (content : string) =
             let shaM = new SHA256Managed()

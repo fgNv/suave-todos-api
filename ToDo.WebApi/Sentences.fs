@@ -13,4 +13,7 @@
     module Error =
         let databaseFailure = "databaseFailure"    
         let authenticationFailure = "authenticationFailure" 
+        let invalidToken = "invalidToken"
+        let tokenWithoutExpirationDate = "tokenWithoutExpirationDate"
+        let tokenExpired = "tokenExpired"
 

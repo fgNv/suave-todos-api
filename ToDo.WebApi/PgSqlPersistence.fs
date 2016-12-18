@@ -37,6 +37,18 @@
             let context = getContext()
             context.Public.User |> Seq.exists(fun u -> u.Id = id)
 
+        let validateCredentials username password =
+            let context = getContext()
+            
+            let encryptedPassword = Infrastructure.Cryptography.encrypt password
+            let queryResult = context.Public.User |> 
+                                    Seq.tryFind(fun u -> u.Name = username && 
+                                                         u.Password = encryptedPassword)
+            match queryResult with 
+                | Some user -> Success username
+                | None -> Error (Sentences.Error.authenticationFailure,
+                                 [Sentences.Error.authenticationFailure])
+
         let insertUser (command: createUserCommand.command) =
             try
                 let context = getContext()
@@ -45,7 +57,6 @@
                 user.Name <- command.name
                 user.Password <- Infrastructure.Cryptography.encrypt command.password
                 context.SubmitUpdates()
-
                 Success command
             with
                 | ex -> Error(Sentences.Error.databaseFailure, 

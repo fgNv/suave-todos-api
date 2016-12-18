@@ -17,21 +17,24 @@ let inline private executeCommand deserializeCommand handleCommand request =
           | Success i -> OK "deu tudo certo"
           | Error (title, errors) ->  BAD_REQUEST (title + " - nem deu")
 
-let apiRoutes = 
-    let securedPath path = 
-        Suave.Owin.OwinApp.ofMidFunc path OwinAuthentication.basicAuthMidFunc
+let apiRoutes =    
+    let protectResource = OwinAuthentication.routeProtection.protectResource
+    let retrieveToken = OwinAuthentication.authorizationServerMiddleware 
+                                PgSqlPersistence.User.validateCredentials
 
-    choose [ path "/user" >=> 
+    let tagResource = choose [ GET  >=> OK "tag getzera"
+                               POST >=> request 
+                                  (executeCommand 
+                                      JsonParse.Tag.deserializeCreateTagCommand Application.Tag.createTag) ]
+
+    choose [ path "/token" >=> retrieveToken
+             path "/user" >=> 
                    choose [ GET >=> OK "user getzera"
                             POST >=> request 
                                 (executeCommand 
                                     JsonParse.User.deserializeCreateUserCommand Application.User.createUser) ] 
-             path "/tag" >=> 
-                   choose [ GET >=> OK "user getzera"
-                            POST >=> request 
-                                (executeCommand 
-                                    JsonParse.Tag.deserializeCreateTagCommand Application.Tag.createTag) ] 
-             securedPath "/todo" >=> 
+             protectResource ( path "/tag" >=> tagResource)
+             path "/todo" >=> 
                    choose [ GET >=> OK "todo getzera"
                             POST >=> request 
                                 (executeCommand 
