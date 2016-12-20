@@ -10,7 +10,7 @@ open Application
 open System
 open Infrastructure.Railroad
 
-let inline private executeCommand deserializeCommand handleCommand request =
+let inline private executeCommand deserializeCommand handleCommand (request : HttpRequest) =
     let result = request.rawForm |> deserializeCommand >>= handleCommand
     
     match result with
@@ -18,14 +18,19 @@ let inline private executeCommand deserializeCommand handleCommand request =
           | Error (title, errors) ->  BAD_REQUEST (title + " - nem deu")
 
 let apiRoutes =    
-    let protectResource = OwinAuthentication.routeProtection.protectResource
-    let retrieveToken = OwinAuthentication.authorizationServerMiddleware 
+    let protectResource = Authentication.routeProtection.protectResource
+    let retrieveToken = Authentication.authorizationServerMiddleware 
                                 PgSqlPersistence.User.validateCredentials
+                                Authentication.Claims.getCustomClaims
+
+    let desCreateTagCmd ctx = 
+        JsonParse.Tag.deserializeCreateTagCommand (Authentication.Claims.getUserIdFromContext ctx)
 
     let tagResource = choose [ GET  >=> OK "tag getzera"
-                               POST >=> request 
-                                  (executeCommand 
-                                      JsonParse.Tag.deserializeCreateTagCommand Application.Tag.createTag) ]
+                               POST >=> 
+                                 context(fun ctx -> 
+                                    (executeCommand 
+                                        (desCreateTagCmd ctx) Application.Tag.createTag ctx.request)) ]
 
     choose [ path "/token" >=> retrieveToken
              path "/user" >=> 

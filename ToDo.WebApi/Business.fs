@@ -9,6 +9,8 @@
                 | true -> Result.Success input
                 | false -> Result.Error (Sentences.Validation.validationFailed, errors)
 
+    type User = {id: Guid; name: string; }
+    
     module createUserCommand =
         type command = {id: Guid; name: string; password: string}
 

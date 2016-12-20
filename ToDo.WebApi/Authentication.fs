@@ -1,4 +1,4 @@
-﻿module OwinAuthentication
+﻿module Authentication
 
 open System
 open Suave.Owin
@@ -14,21 +14,38 @@ open Owin
 open Microsoft.Owin.Builder
 open Microsoft.Owin.Security.Infrastructure
 
-type private SimpleAuthenticationProvider(validateUserCredentials) =
+module Claims =
+    open Suave
+    
+    let UserIdKey = "userId"
+    
+    let getCustomClaims (user : Business.User) = 
+        [(Suave.Authentication.UserNameKey, user.name); (UserIdKey, user.id.ToString())]
+    
+    let addClaim (claim : string * string) (identity : ClaimsIdentity) =
+        identity.AddClaim(new Claim(fst claim, snd claim))
+        
+    let getUserIdFromContext (context : HttpContext) =
+         unbox(context.userState.[UserIdKey]) |> Guid.Parse
+
+type private SimpleAuthenticationProvider<'a>(validateUserCredentials, 
+                                              getCustomClaims : 'a -> (string * string) list) =
     inherit OAuthAuthorizationServerProvider()
     override this.ValidateClientAuthentication (context : OAuthValidateClientAuthenticationContext) =
         let f: Async<unit> = async { context.Validated() |> ignore }
         upcast Async.StartAsTask f 
 
-    override this.GrantResourceOwnerCredentials(context: OAuthGrantResourceOwnerCredentialsContext) =
-        let f: Async<unit> = async { 
+    override this.GrantResourceOwnerCredentials(context: OAuthGrantResourceOwnerCredentialsContext) =        
+        let f: Async<unit> = async {  
             let result = validateUserCredentials context.UserName context.Password
             match result with 
                 | Success user -> 
                     let identity = new ClaimsIdentity(context.Options.AuthenticationType)
                     identity.AddClaim(new Claim("sub", context.UserName))
                     identity.AddClaim(new Claim("role", "user"))
-                    identity.AddClaim(new Claim("username", user))
+
+                    getCustomClaims user |> List.iter(fun tp -> Claims.addClaim tp identity )
+                    
                     context.Validated(identity) |> ignore
                 | Error (title, errors) -> 
                     context.SetError(Sentences.Error.authenticationFailure, Sentences.Validation.invalidCredentials)
@@ -37,12 +54,12 @@ type private SimpleAuthenticationProvider(validateUserCredentials) =
 
 let private hostAppName = "ToDoApi"
 
-let authorizationServerMiddleware validateUserCredentials =
+let authorizationServerMiddleware validateUserCredentials getCustomClaims =
     let serverOptions = new OAuthAuthorizationServerOptions(
                             AllowInsecureHttp = true,
                             TokenEndpointPath= new PathString("/token"),
                             AccessTokenExpireTimeSpan = TimeSpan.FromDays(1.0),
-                            Provider = new SimpleAuthenticationProvider(validateUserCredentials) )
+                            Provider = new SimpleAuthenticationProvider<'a>(validateUserCredentials, getCustomClaims) )
     
     let builder = new AppBuilder() :> IAppBuilder
     builder.UseOAuthAuthorizationServer(serverOptions) |> ignore
@@ -103,22 +120,36 @@ module routeProtection =
               | Choice1Of2 header -> Success header
               | Choice2Of2 _ -> Error (Sentences.Error.authenticationFailure, 
                                        [| Sentences.Validation.noAuthenticationHeaderFound |])
-                                           
-    let private getUseNameFromClaims (ticket : AuthenticationTicket) =
-        let claim = ticket.Identity.Claims |> Seq.tryFind(fun c -> c.Type = "username")
-        match claim with
-            | Some c -> c.Value
-            | None -> "i lesq"
 
-    let inline private addUserName username ctx = { 
-        ctx with userState = ctx.userState |> Map.add Suave.Authentication.UserNameKey (box username) }
+    let private getClaim (key : string) (ticket : AuthenticationTicket) =
+        let claim = ticket.Identity.Claims |> Seq.tryFind(fun c -> c.Type = key)
+        match claim with 
+            | Some c -> Success c.Value 
+            | None -> Error ("sem claim", [|"CLAIMLESS"|])
+                    
+    let private getUserNameFromClaims = getClaim Suave.Authentication.UserNameKey
+    let private getUserIdFromClaims = getClaim Claims.UserIdKey
+
+    let inline private addClaims claims ctx = 
+        let userNameResult = getUserNameFromClaims claims
+        let userIdResult = getUserIdFromClaims claims
+        match userNameResult, userIdResult with
+            | Success userName, Success userId ->
+                   Success { ctx with userState = ctx.userState 
+                                    |> Map.add Suave.Authentication.UserNameKey (box (userName))
+                                    |> Map.add Claims.UserIdKey (box (userId)) }          
+            | Error (t1, e1) , _ -> Error (t1, e1)
+            | _ , Error (t1, e1) -> Error (t1, e1)
 
     let protectResource (protectedPart : WebPart) (ctx : HttpContext) =     
         
         let result = ctx |> getAuthorizationHeaderFromContext >>= executeVerifications
         
         match result with
-        | Success authTicket ->                 
-            protectedPart (addUserName (getUseNameFromClaims authTicket) ctx)
+        | Success authTicket ->                         
+            let contextWithClaims = addClaims authTicket ctx
+            match contextWithClaims with
+                | Success context -> protectedPart context
+                | Error (t1, e1) -> Suave.RequestErrors.challenge ctx
         | Error(title, messages) -> 
             Suave.RequestErrors.challenge ctx

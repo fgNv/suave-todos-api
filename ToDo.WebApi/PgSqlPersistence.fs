@@ -37,7 +37,7 @@
             let context = getContext()
             context.Public.User |> Seq.exists(fun u -> u.Id = id)
 
-        let validateCredentials username password =
+        let validateCredentials username password : Result<Business.User> =
             let context = getContext()
             
             let encryptedPassword = Infrastructure.Cryptography.encrypt password
@@ -45,7 +45,7 @@
                                     Seq.tryFind(fun u -> u.Name = username && 
                                                          u.Password = encryptedPassword)
             match queryResult with 
-                | Some user -> Success username
+                | Some user -> Success {id = user.Id; name = user.Name; }
                 | None -> Error (Sentences.Error.authenticationFailure,
                                  [Sentences.Error.authenticationFailure])
 
