@@ -2,14 +2,14 @@
     open FSharp.Data.Sql
     open System.IO
     open Business
-    open Infrastructure.Railroad
+    open Railroad
 
     [<Literal>]
     let private connectionString = @"User ID=homestead;Password=secret;
                                      Host=192.168.36.36;Port=5432;Database=ingresso_2;"
 
     [<Literal>]
-    let private resolutionPath = "..\\..\\..\\packages\\Npgsql.3.1.9\\lib\\net451\\Npgsql.dll"
+    let private resolutionPath = @"..\..\..\packages\Npgsql.3.1.9\lib\net451\Npgsql.dll"
 
     type private pgsqlAccess = SqlDataProvider<Common.DatabaseProviderTypes.POSTGRESQL,
                                                connectionString,

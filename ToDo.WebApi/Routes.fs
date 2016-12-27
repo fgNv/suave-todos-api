@@ -8,7 +8,7 @@ open Suave.Successful
 open Suave.RequestErrors
 open Application
 open System
-open Infrastructure.Railroad
+open Railroad
 
 let inline private executeCommand deserializeCommand handleCommand (request : HttpRequest) =
     let result = request.rawForm |> deserializeCommand >>= handleCommand
@@ -18,13 +18,13 @@ let inline private executeCommand deserializeCommand handleCommand (request : Ht
           | Error (title, errors) ->  BAD_REQUEST (title + " - nem deu")
 
 let apiRoutes =    
-    let protectResource = Authentication.routeProtection.protectResource
-    let retrieveToken = Authentication.authorizationServerMiddleware 
+    let protectResource = ResourceProtection.protectResource
+    let retrieveToken = AuthorizationServer.authorizationServerMiddleware 
                                 PgSqlPersistence.User.validateCredentials
-                                Authentication.Claims.getCustomClaims
+                                Claims.getCustomClaims
 
     let desCreateTagCmd ctx = 
-        JsonParse.Tag.deserializeCreateTagCommand (Authentication.Claims.getUserIdFromContext ctx)
+        JsonParse.Tag.deserializeCreateTagCommand (Claims.getUserIdFromContext ctx)
 
     let tagResource = choose [ GET  >=> OK "tag getzera"
                                POST >=> 

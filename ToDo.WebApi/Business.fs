@@ -1,6 +1,6 @@
 ﻿module Business
     open System
-    open Infrastructure.Railroad    
+    open Railroad    
     
     let inline private validate getErrors input =
         let errors = getErrors input
@@ -9,7 +9,9 @@
                 | true -> Result.Success input
                 | false -> Result.Error (Sentences.Validation.validationFailed, errors)
 
-    type User = {id: Guid; name: string; }
+    type User = {id: Guid; name: string; } 
+                member x.GetName() = x.name
+                member x.GetId() = x.id.ToString()
     
     module createUserCommand =
         type command = {id: Guid; name: string; password: string}

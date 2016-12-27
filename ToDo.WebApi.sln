@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToDo.Migrations", "ToDo.Migrations\ToDo.Migrations.csproj", "{DAECE086-5F9E-46F3-84D6-68928E2B0ED2}"
 EndProject
@@ -28,6 +28,10 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "ToDo.WebSite", "ToDo.WebSit
 		SlnRelativePath = "ToDo.WebSite\"
 	EndProjectSection
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Suave.BearerTokenAuthentication", "Suave.BearerTokenAuthentication\Suave.BearerTokenAuthentication.fsproj", "{5EA5F523-DFF9-4E74-814E-1D04A5A89B0E}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FgNv.ROP", "FgNv.ROP\FgNv.ROP.fsproj", "{43C8987A-7318-4A6E-ACD6-960B04CCDAD1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,6 +50,14 @@ Global
 		{9C148DDF-8956-4311-9FCA-3D8AB0AACC1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C148DDF-8956-4311-9FCA-3D8AB0AACC1C}.Release|Any CPU.ActiveCfg = Debug|Any CPU
 		{9C148DDF-8956-4311-9FCA-3D8AB0AACC1C}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{5EA5F523-DFF9-4E74-814E-1D04A5A89B0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EA5F523-DFF9-4E74-814E-1D04A5A89B0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EA5F523-DFF9-4E74-814E-1D04A5A89B0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EA5F523-DFF9-4E74-814E-1D04A5A89B0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43C8987A-7318-4A6E-ACD6-960B04CCDAD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43C8987A-7318-4A6E-ACD6-960B04CCDAD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43C8987A-7318-4A6E-ACD6-960B04CCDAD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43C8987A-7318-4A6E-ACD6-960B04CCDAD1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
