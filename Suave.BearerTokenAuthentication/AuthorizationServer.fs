@@ -27,7 +27,7 @@ type private SimpleAuthenticationProvider<'a>(validateUserCredentials,
                     identity.AddClaim(new Claim("sub", context.UserName))
                     identity.AddClaim(new Claim("role", "user"))
 
-                    getCustomClaims user |> List.iter(fun tp -> Claims.addClaim tp identity )
+                    getCustomClaims user |> List.iter(fun tuple -> Claims.addClaim tuple identity )
                     
                     context.Validated(identity) |> ignore
                 | Error (title, errors) -> 

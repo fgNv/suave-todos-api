@@ -60,33 +60,33 @@ let private getAuthorizationHeaderFromContext ctx =
           | Choice2Of2 _ -> Error ("authenticationFailure", 
                                    [| "noAuthenticationHeaderFound" |])
 
-let private getClaim (key : string) (ticket : AuthenticationTicket) =
+let private getClaim (ticket : AuthenticationTicket) (key : string) =
     let claim = ticket.Identity.Claims |> Seq.tryFind(fun c -> c.Type = key)
     match claim with 
         | Some c -> Success c.Value 
         | None -> Error ("sem claim", [|"CLAIMLESS"|])
                 
-let private getUserNameFromClaims = getClaim Suave.Authentication.UserNameKey
-let private getUserIdFromClaims = getClaim Claims.UserIdKey
+let private addClaims ticket (ctx : HttpContext) (claimsKeys : string seq) = 
+    let claimsRetrieved = claimsKeys |> Seq.map (fun key -> key, (getClaim ticket key))
 
-let inline private addClaims claims ctx = 
-    let userNameResult = getUserNameFromClaims claims
-    let userIdResult = getUserIdFromClaims claims
-    match userNameResult, userIdResult with
-        | Success userName, Success userId ->
-               Success { ctx with userState = ctx.userState 
-                                |> Map.add Suave.Authentication.UserNameKey (box (userName))
-                                |> Map.add Claims.UserIdKey (box (userId)) }          
-        | Error (t1, e1) , _ -> Error (t1, e1)
-        | _ , Error (t1, e1) -> Error (t1, e1)
+    let anyWithError = claimsRetrieved |> Seq.exists (fun (key, value) -> Railroad.isError value)
 
-let protectResource (protectedPart : WebPart) (ctx : HttpContext) =     
-    
+    match anyWithError with
+        | false -> 
+            let choosed = claimsRetrieved |> Seq.choose
+                                               (fun (key, value) -> match value with 
+                                                                     | Success v -> Some (key, box(v)) 
+                                                                     | _ -> None)   
+                                          |> Array.ofSeq      
+            Success { ctx with userState = Map.ofArray choosed }
+        | true -> Error ("rr", ["rr"]) 
+
+let protectResource (claimsKeys : string seq) (protectedPart : WebPart) (ctx : HttpContext) =
     let result = ctx |> getAuthorizationHeaderFromContext >>= executeVerifications
     
     match result with
     | Success authTicket ->                         
-        let contextWithClaims = addClaims authTicket ctx
+        let contextWithClaims = addClaims authTicket ctx claimsKeys
         match contextWithClaims with
             | Success context -> protectedPart context
             | Error (t1, e1) -> Suave.RequestErrors.challenge ctx

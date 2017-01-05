@@ -9,28 +9,39 @@ open Suave.RequestErrors
 open Application
 open System
 open Railroad
+open ResourceProtection
 
 let inline private executeCommand deserializeCommand handleCommand (request : HttpRequest) =
     let result = request.rawForm |> deserializeCommand >>= handleCommand
+
+    match result with
+          | Success i -> OK "deu tudo certo"
+          | Error (title, errors) -> BAD_REQUEST (title + " - nem deu")
+
+let inline private executeCommand' deserializeCommand handleCommand (ctx : HttpContext) =
+    let result = ctx.request.rawForm |> deserializeCommand ctx >>= handleCommand
     
     match result with
           | Success i -> OK "deu tudo certo"
-          | Error (title, errors) ->  BAD_REQUEST (title + " - nem deu")
+          | Error (title, errors) -> BAD_REQUEST (title + " - nem deu")
 
-let apiRoutes =    
-    let protectResource = ResourceProtection.protectResource
+let apiRoutes =
+    let protectResourceClaimList = 
+        protectResource [|Suave.Authentication.UserNameKey; ToDoClaims.UserIdKey|]
+
     let retrieveToken = AuthorizationServer.authorizationServerMiddleware 
                                 PgSqlPersistence.User.validateCredentials
-                                Claims.getCustomClaims
+                                ToDoClaims.getCustomClaims
 
     let desCreateTagCmd ctx = 
-        JsonParse.Tag.deserializeCreateTagCommand (Claims.getUserIdFromContext ctx)
+        JsonParse.Tag.deserializeCreateTagCommand (ToDoClaims.getUserIdFromContext ctx)
+
+    let extractDataFromContext key = 
+        context( fun ctx -> unbox(ctx.userState.[key]))
 
     let tagResource = choose [ GET  >=> OK "tag getzera"
-                               POST >=> 
-                                 context(fun ctx -> 
-                                    (executeCommand 
-                                        (desCreateTagCmd ctx) Application.Tag.createTag ctx.request)) ]
+                               POST >=>               
+                                    context(executeCommand' desCreateTagCmd Application.Tag.createTag) ]
 
     choose [ path "/token" >=> retrieveToken
              path "/user" >=> 
@@ -38,7 +49,7 @@ let apiRoutes =
                             POST >=> request 
                                 (executeCommand 
                                     JsonParse.User.deserializeCreateUserCommand Application.User.createUser) ] 
-             protectResource ( path "/tag" >=> tagResource)
+             protectResourceClaimList ( path "/tag" >=> tagResource)
              path "/todo" >=> 
                    choose [ GET >=> OK "todo getzera"
                             POST >=> request 

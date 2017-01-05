@@ -9,6 +9,9 @@ type ErrorContent =
 type Result<'TEntity> =  
     | Success of 'TEntity
     | Error of string * seq<string>
+    
+let isError result =
+    match result with | Success _ -> false | Error _ -> true
 
 let bind switchFunction input =
     match input with
