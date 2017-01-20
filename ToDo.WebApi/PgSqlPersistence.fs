@@ -19,7 +19,7 @@
         pgsqlAccess.GetDataContext()
         
     module Tag = 
-        let insertTag (command: createTagCommand.command) =            
+        let insertTag (command: CreateTag.Command) =            
             try 
                 let context = getContext()
                 let tag = context.Public.Tag.Create()
@@ -49,7 +49,7 @@
                 | None -> Error (Sentences.Error.authenticationFailure,
                                  [Sentences.Error.authenticationFailure])
 
-        let insertUser (command: createUserCommand.command) =
+        let insertUser (command: CreateUser.Command) =
             try
                 let context = getContext()
                 let user = context.Public.User.Create()
@@ -68,7 +68,7 @@
             toDoTagLink.TagId <- tagId
             toDoTagLink.ToDoId <- toDoId
 
-        let insertToDo (command : createToDoCommand.command) =
+        let insertToDo (command : CreateToDo.Command) =
             try
                 let context = getContext()
                 let todo = context.Public.ToDo.Create()

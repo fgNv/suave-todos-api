@@ -13,8 +13,8 @@
                 member x.GetName() = x.name
                 member x.GetId() = x.id.ToString()
     
-    module createUserCommand =
-        type command = {id: Guid; name: string; password: string}
+    module CreateUser =
+        type Command = {id: Guid; name: string; password: string}
 
         let private getErrors item =
             seq { if item.id = Guid.Empty then
@@ -27,8 +27,8 @@
         let handle createUser command =
             command |> validate getErrors >>= createUser
 
-    module createTagCommand =
-        type command = {id: Guid; name: string; creatorId: Guid}
+    module CreateTag =
+        type Command = {id: Guid; name: string; creatorId: Guid}
 
         let private getErrors userExists item =
             seq { if item.id = Guid.Empty then
@@ -43,8 +43,8 @@
         let handle userExists createTag command =
             command |> validate (getErrors userExists) >>= createTag
 
-    module createToDoCommand =           
-        type command = { id: Guid
+    module CreateToDo =           
+        type Command = { id: Guid
                          description: string 
                          creatorId: Guid
                          tagsIds: Guid list } 

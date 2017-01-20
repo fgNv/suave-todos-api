@@ -6,14 +6,14 @@ module Persistence = PgSqlPersistence
 
 module User =
     let createUser =
-        Business.createUserCommand.handle Persistence.User.insertUser
+        Business.CreateUser.handle Persistence.User.insertUser
 
 module Tag =
     let createTag =
-        Business.createTagCommand.handle
+        Business.CreateTag.handle
             Persistence.User.userExists Persistence.Tag.insertTag
 
 module ToDo =
     let createToDo =
-        Business.createToDoCommand.handle 
+        Business.CreateToDo.handle 
             Persistence.User.userExists Persistence.ToDo.insertToDo

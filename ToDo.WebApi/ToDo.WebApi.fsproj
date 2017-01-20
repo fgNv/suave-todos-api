@@ -60,8 +60,8 @@
     <Compile Include="Infrastructure.fs" />
     <Compile Include="Business.fs" />
     <Compile Include="ToDoClaims.fs" />
-    <Compile Include="JsonParse.fs" />
     <Compile Include="PgSqlPersistence.fs" />
+    <Compile Include="JsonParse.fs" />
     <Compile Include="Application.fs" />
     <Compile Include="Routes.fs" />
     <Compile Include="Program.fs" />

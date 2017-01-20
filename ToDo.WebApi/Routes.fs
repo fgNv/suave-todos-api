@@ -10,6 +10,7 @@ open Application
 open System
 open Railroad
 open ResourceProtection
+open JsonParse
 
 let inline private executeCommand deserializeCommand handleCommand (request : HttpRequest) =
     let result = request.rawForm |> deserializeCommand >>= handleCommand
@@ -17,42 +18,26 @@ let inline private executeCommand deserializeCommand handleCommand (request : Ht
     match result with
           | Success i -> OK "deu tudo certo"
           | Error (title, errors) -> BAD_REQUEST (title + " - nem deu")
-
-let inline private executeCommand' deserializeCommand handleCommand (ctx : HttpContext) =
-    let result = ctx.request.rawForm |> deserializeCommand ctx >>= handleCommand
-    
-    match result with
-          | Success i -> OK "deu tudo certo"
-          | Error (title, errors) -> BAD_REQUEST (title + " - nem deu")
-
+          
 let apiRoutes =
-    let protectResourceClaimList = 
+    let protectResource' = 
         protectResource [|Suave.Authentication.UserNameKey; ToDoClaims.UserIdKey|]
-
-    let retrieveToken = AuthorizationServer.authorizationServerMiddleware 
-                                PgSqlPersistence.User.validateCredentials
-                                ToDoClaims.getCustomClaims
-
-    let desCreateTagCmd ctx = 
-        JsonParse.Tag.deserializeCreateTagCommand (ToDoClaims.getUserIdFromContext ctx)
-
-    let extractDataFromContext key = 
-        context( fun ctx -> unbox(ctx.userState.[key]))
-
-    let tagResource = choose [ GET  >=> OK "tag getzera"
-                               POST >=>               
-                                    context(executeCommand' desCreateTagCmd Application.Tag.createTag) ]
-
-    choose [ path "/token" >=> retrieveToken
+                                
+    choose [ path "/token" >=> AuthorizationServer.authorizationServerMiddleware 
+                               PgSqlPersistence.User.validateCredentials
+                               ToDoClaims.getCustomClaims
              path "/user" >=> 
-                   choose [ GET >=> OK "user getzera"
+                   choose [ GET >=> OK "user get"
                             POST >=> request 
-                                (executeCommand 
-                                    JsonParse.User.deserializeCreateUserCommand Application.User.createUser) ] 
-             protectResourceClaimList ( path "/tag" >=> tagResource)
+                                (executeCommand CreateUserCommand.deserialize User.createUser) ] 
+             path "/tag" >=> protectResource' (
+                   choose [ GET  >=> OK "tag get"
+                            POST >=> context(fun ctx ->   
+                                let userId = ToDoClaims.getUserIdFromContext ctx
+                                request(executeCommand (CreateTagCommand.deserialize userId) Tag.createTag)
+                            )])
              path "/todo" >=> 
-                   choose [ GET >=> OK "todo getzera"
+                   choose [ GET >=> OK "todo get"
                             POST >=> request 
-                                (executeCommand 
-                                    JsonParse.ToDo.deserializeCreateToDoCommand Application.ToDo.createToDo) ]
-             GET >=> NOT_FOUND "kdddd" ]
+                                (executeCommand CreateToDoCommand.deserialize ToDo.createToDo) ]
+             GET >=> NOT_FOUND "no resource matches the request" ]
